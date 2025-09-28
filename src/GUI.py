@@ -1,7 +1,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPalette, QColor
-from PyQt5.QtWidgets import QAction, QDockWidget, QWidget, QVBoxLayout, QLabel, QApplication
+from PyQt5.QtGui import QPalette, QColor, QPixmap
+from PyQt5.QtWidgets import QAction, QDockWidget, QWidget, QVBoxLayout, QLabel, QApplication, QFileDialog
 import sys
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -14,6 +14,11 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.initsidebar()
         self.initmenubar()
+        self.initdarktheme()
+        self.image_label = QLabel("Open an image to display")
+        self.image_label.setAlignment(Qt.AlignCenter)
+        self.setCentralWidget(self.image_label)
+
     def initsidebar(self):
         sidebar = QDockWidget("Tools", self)
         sidebar.setFeatures(QDockWidget.DockWidgetFeature.NoDockWidgetFeatures)
@@ -33,6 +38,7 @@ class MainWindow(QtWidgets.QMainWindow):
         fileMenu = menubar.addMenu("File")
 
         openAction = QAction("Open", self)
+        openAction.triggered.connect(lambda: self.openImage(self.image_label))
         saveAction = QAction("Save", self)
         exitAction = QAction("Exit", self)
 
@@ -41,3 +47,39 @@ class MainWindow(QtWidgets.QMainWindow):
         fileMenu.addSeparator()
         fileMenu.addAction(exitAction)
 
+    def initdarktheme(self):
+        self.app.setStyle("Fusion")
+        palette = QPalette()
+        palette.setColor(QPalette.Window, QColor(18, 18, 18))
+        palette.setColor(QPalette.WindowText, QColor(230, 230, 230))
+        palette.setColor(QPalette.Base, QColor(28, 28, 28))
+        palette.setColor(QPalette.AlternateBase, QColor(38, 38, 38))
+        palette.setColor(QPalette.ToolTipBase, QColor(255, 255, 255))
+        palette.setColor(QPalette.ToolTipText, QColor(255, 255, 255))
+        palette.setColor(QPalette.Text, QColor(230, 230, 230))
+        palette.setColor(QPalette.Button, QColor(33, 33, 33))
+        palette.setColor(QPalette.ButtonText, QColor(230, 230, 230))
+        palette.setColor(QPalette.BrightText, QColor(255, 0, 0))
+        palette.setColor(QPalette.Highlight, QColor(66, 133, 244))
+        palette.setColor(QPalette.HighlightedText, QColor(255, 255, 255))
+        self.app.setPalette(palette)
+
+    def renderimage(self, imageLabel: QLabel, imagePath: str):
+        pixmap = QPixmap(imagePath)
+        if pixmap.isNull():
+            print("Failed to load image")
+            return
+
+        scaledPixmap = pixmap.scaled(
+            imageLabel.size(),
+            Qt.KeepAspectRatio,
+            Qt.SmoothTransformation,
+        )
+        imageLabel.setPixmap(scaledPixmap)
+
+    def openImage(self, imageLabel: QLabel):
+        path, _ = QFileDialog.getOpenFileName(
+            imageLabel, "Open Image", "", "Images (*.png *.jpg *.jpeg *.bmp)"
+        )
+        if path:
+            self.renderimage(imageLabel, path)
