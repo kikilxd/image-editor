@@ -4,6 +4,30 @@ from PyQt5.QtGui import QPalette, QColor, QPixmap
 from PyQt5.QtWidgets import QAction, QDockWidget, QWidget, QVBoxLayout, QLabel, QApplication, QFileDialog
 import sys
 
+class ResizeForm(QDialog):
+    def __init__(self, parent=None):
+        super(ResizeForm, self).__init__(parent)
+        grid = QGridLayout()
+
+        grid.addWidget(QLabel("Old"), 0, 1)
+        grid.addWidget(QLabel("New"), 0, 2)
+
+        grid.addWidget(QLabel("X"), 1, 0)
+        grid.addWidget(QLineEdit(), 1, 1)
+        grid.addWidget(QLineEdit(), 1, 2)
+
+        grid.addWidget(QLabel("Y"), 2, 0)
+        grid.addWidget(QLineEdit(), 2, 1)
+        grid.addWidget(QLineEdit(), 2, 2)
+
+        button = QPushButton("Resize")
+
+        main_layout = QVBoxLayout()
+        main_layout.addLayout(grid)
+        main_layout.addWidget(button)
+
+        self.setLayout(main_layout)
+
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
