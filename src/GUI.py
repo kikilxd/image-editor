@@ -1,46 +1,48 @@
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPalette, QColor, QPixmap
-from PyQt5.QtWidgets import QAction, QDockWidget, QWidget, QVBoxLayout, QLabel, QApplication, QFileDialog
+from PyQt6 import QtWidgets, QtGui
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QPalette, QColor, QIcon, QAction
+from PyQt6.QtWidgets import (
+    QDockWidget, QWidget, QVBoxLayout, QLabel, QApplication,
+    QFileDialog, QDialog, QLineEdit, QPushButton, QGridLayout, QMessageBox
+)
 import sys
+from tools import Editor
+
 
 class ResizeForm(QDialog):
     def __init__(self, parent=None):
-        super(ResizeForm, self).__init__(parent)
+        super().__init__(parent)
+        self.setWindowTitle("Resize Image")
+
         grid = QGridLayout()
+        grid.addWidget(QLabel("New Width:"), 0, 0)
+        self.width_input = QLineEdit()
+        grid.addWidget(self.width_input, 0, 1)
 
-        grid.addWidget(QLabel("Old"), 0, 1)
-        grid.addWidget(QLabel("New"), 0, 2)
+        grid.addWidget(QLabel("New Height:"), 1, 0)
+        self.height_input = QLineEdit()
+        grid.addWidget(self.height_input, 1, 1)
 
-        grid.addWidget(QLabel("X"), 1, 0)
-        grid.addWidget(QLineEdit(), 1, 1)
-        grid.addWidget(QLineEdit(), 1, 2)
+        self.button = QPushButton("Resize")
+        grid.addWidget(self.button, 2, 0, 1, 2)
+        self.setLayout(grid)
 
-        grid.addWidget(QLabel("Y"), 2, 0)
-        grid.addWidget(QLineEdit(), 2, 1)
-        grid.addWidget(QLineEdit(), 2, 2)
-
-        button = QPushButton("Resize")
-
-        main_layout = QVBoxLayout()
-        main_layout.addLayout(grid)
-        main_layout.addWidget(button)
-
-        self.setLayout(main_layout)
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
-        self.app = QApplication(sys.argv)
+        self.app = QApplication.instance() or QApplication(sys.argv)
         self.setWindowTitle("Image Editor")
         self.resize(800, 600)
-        self.setWindowIcon(QtGui.QIcon())
+
+        self.editor = Editor()
 
         self.initsidebar()
         self.initmenubar()
         self.initdarktheme()
+
         self.image_label = QLabel("Open an image to display")
-        self.image_label.setAlignment(Qt.AlignCenter)
+        self.image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.setCentralWidget(self.image_label)
 
     def initsidebar(self):
@@ -48,62 +50,85 @@ class MainWindow(QtWidgets.QMainWindow):
         sidebar.setFeatures(QDockWidget.DockWidgetFeature.NoDockWidgetFeatures)
         sidebarContent = QWidget()
         layout = QVBoxLayout()
-        layout.addWidget(QLabel("sidebar ph"))
-        layout.addWidget(QLabel("button1"))
-        layout.addWidget(QLabel("button2"))
-
+        layout.addWidget(QLabel("Tools"))
         layout.addStretch()
         sidebarContent.setLayout(layout)
         sidebar.setWidget(sidebarContent)
-        self.addDockWidget(Qt.LeftDockWidgetArea, sidebar)
+        self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, sidebar)
 
     def initmenubar(self):
         menubar = self.menuBar()
         fileMenu = menubar.addMenu("File")
 
         openAction = QAction("Open", self)
-        openAction.triggered.connect(lambda: self.openImage(self.image_label))
+        openAction.triggered.connect(self.openImage)
+
         saveAction = QAction("Save", self)
-        exitAction = QAction("Exit", self)
+        saveAction.triggered.connect(self.saveImage)
+
+        resizeAction = QAction("Resize", self)
+        resizeAction.triggered.connect(self.showResizeDialog)
 
         fileMenu.addAction(openAction)
         fileMenu.addAction(saveAction)
+        fileMenu.addAction(resizeAction)
         fileMenu.addSeparator()
-        fileMenu.addAction(exitAction)
+        fileMenu.addAction("Exit", self.close)
 
     def initdarktheme(self):
         self.app.setStyle("Fusion")
         palette = QPalette()
-        palette.setColor(QPalette.Window, QColor(18, 18, 18))
-        palette.setColor(QPalette.WindowText, QColor(230, 230, 230))
-        palette.setColor(QPalette.Base, QColor(28, 28, 28))
-        palette.setColor(QPalette.AlternateBase, QColor(38, 38, 38))
-        palette.setColor(QPalette.ToolTipBase, QColor(255, 255, 255))
-        palette.setColor(QPalette.ToolTipText, QColor(255, 255, 255))
-        palette.setColor(QPalette.Text, QColor(230, 230, 230))
-        palette.setColor(QPalette.Button, QColor(33, 33, 33))
-        palette.setColor(QPalette.ButtonText, QColor(230, 230, 230))
-        palette.setColor(QPalette.BrightText, QColor(255, 0, 0))
-        palette.setColor(QPalette.Highlight, QColor(66, 133, 244))
-        palette.setColor(QPalette.HighlightedText, QColor(255, 255, 255))
+        palette.setColor(QPalette.ColorRole.Window, QColor(18, 18, 18))
+        palette.setColor(QPalette.ColorRole.WindowText, QColor(230, 230, 230))
+        palette.setColor(QPalette.ColorRole.Base, QColor(28, 28, 28))
+        palette.setColor(QPalette.ColorRole.Text, QColor(230, 230, 230))
+        palette.setColor(QPalette.ColorRole.Button, QColor(33, 33, 33))
+        palette.setColor(QPalette.ColorRole.ButtonText, QColor(230, 230, 230))
+        palette.setColor(QPalette.ColorRole.Highlight, QColor(66, 133, 244))
         self.app.setPalette(palette)
 
-    def renderimage(self, imageLabel: QLabel, imagePath: str):
-        pixmap = QPixmap(imagePath)
-        if pixmap.isNull():
-            print("Failed to load image")
+    def openImage(self):
+        path, _ = QFileDialog.getOpenFileName(self, "Open Image", "", "Images (*.png *.jpg *.jpeg *.bmp)")
+        if path:
+            self.editor.open(path)
+            self.renderImage()
+
+    def renderImage(self):
+        pixmap = self.editor.to_qpixmap()
+        if pixmap:
+            scaled = pixmap.scaled(
+                self.image_label.size(),
+                Qt.AspectRatioMode.KeepAspectRatio,
+                Qt.TransformationMode.SmoothTransformation
+            )
+            self.image_label.setPixmap(scaled)
+
+    def showResizeDialog(self):
+        if not self.editor.image:
+            QMessageBox.warning(self, "No Image", "Open an image first")
             return
 
-        scaledPixmap = pixmap.scaled(
-            imageLabel.size(),
-            Qt.KeepAspectRatio,
-            Qt.SmoothTransformation,
-        )
-        imageLabel.setPixmap(scaledPixmap)
+        form = ResizeForm(self)
+        form.button.clicked.connect(lambda: self.applyResize(form))
+        form.show()
 
-    def openImage(self, imageLabel: QLabel):
-        path, _ = QFileDialog.getOpenFileName(
-            imageLabel, "Open Image", "", "Images (*.png *.jpg *.jpeg *.bmp)"
-        )
+    def applyResize(self, form):
+        try:
+            w = int(form.width_input.text())
+            h = int(form.height_input.text())
+        except ValueError:
+            QMessageBox.warning(self, "Error", "Invalid width or height")
+            return
+
+        self.editor.resize(w, h)
+        self.renderImage()
+        form.close()
+
+    def saveImage(self):
+        if not self.editor.image:
+            QMessageBox.warning(self, "No Image", "Open an image first")
+            return
+        path, _ = QFileDialog.getSaveFileName(self, "Save Image", "", "Images (*.png *.jpg *.jpeg *.bmp)")
         if path:
-            self.renderimage(imageLabel, path)
+            self.editor.save(path)
+            QMessageBox.information(self, "Saved", f"Saved to: {path}")
