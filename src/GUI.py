@@ -40,6 +40,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.initsidebar()
         self.initmenubar()
         self.initdarktheme()
+        self.initStatusbar()
 
         self.image_label = QLabel("Open an image to display")
         self.image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -90,6 +91,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def openImage(self):
         path, _ = QFileDialog.getOpenFileName(self, "Open Image", "", "Images (*.png *.jpg *.jpeg *.bmp)")
         if path:
+            self.path_label.setText(path)
             self.editor.open(path)
             self.renderImage()
 
@@ -123,6 +125,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.editor.resize(w, h)
         self.renderImage()
         form.close()
+
+
+    def initStatusbar(self):
+        self.status_bar = self.statusBar()
+        self.path_label = QLabel("Image not loaded")
+        self.status_bar.addPermanentWidget(self.path_label)
 
     def saveImage(self):
         if not self.editor.image:
