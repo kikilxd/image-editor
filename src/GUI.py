@@ -6,14 +6,15 @@ from PyQt6.QtWidgets import (
     QFileDialog, QDialog, QLineEdit, QPushButton, QGridLayout, QMessageBox
 )
 import sys
+import logging
 from tools import Editor
 
 
 class ResizeForm(QDialog):
     def __init__(self, parent=None):
+        logging.debug("initializing resize form")
         super().__init__(parent)
         self.setWindowTitle("Resize Image")
-
         grid = QGridLayout()
         grid.addWidget(QLabel("New Width:"), 0, 0)
         self.width_input = QLineEdit()
@@ -26,10 +27,12 @@ class ResizeForm(QDialog):
         self.button = QPushButton("Resize")
         grid.addWidget(self.button, 2, 0, 1, 2)
         self.setLayout(grid)
+        logging.debug("resize form initialized")
 
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
+        logging.debug("initializing MainWindow")
         super().__init__()
         self.app = QApplication.instance() or QApplication(sys.argv)
         self.setWindowTitle("Image Editor")
@@ -45,6 +48,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.image_label = QLabel("Open an image to display")
         self.image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.setCentralWidget(self.image_label)
+        logging.debug("initialized MainWindow")
 
     def initsidebar(self):
         sidebar = QDockWidget("Tools", self)
@@ -56,6 +60,7 @@ class MainWindow(QtWidgets.QMainWindow):
         sidebarContent.setLayout(layout)
         sidebar.setWidget(sidebarContent)
         self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, sidebar)
+        logging.debug("initialized sidebar")
 
     def initmenubar(self):
         menubar = self.menuBar()
@@ -75,6 +80,7 @@ class MainWindow(QtWidgets.QMainWindow):
         fileMenu.addAction(resizeAction)
         fileMenu.addSeparator()
         fileMenu.addAction("Exit", self.close)
+        logging.debug("initialized menubar")
 
     def initdarktheme(self):
         self.app.setStyle("Fusion")
@@ -87,6 +93,7 @@ class MainWindow(QtWidgets.QMainWindow):
         palette.setColor(QPalette.ColorRole.ButtonText, QColor(230, 230, 230))
         palette.setColor(QPalette.ColorRole.Highlight, QColor(66, 133, 244))
         self.app.setPalette(palette)
+        logging.debug("dark theme applied")
 
     def openImage(self):
         path, _ = QFileDialog.getOpenFileName(self, "Open Image", "", "Images (*.png *.jpg *.jpeg *.bmp)")
@@ -96,6 +103,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.renderImage()
 
     def renderImage(self):
+        logging.debug("rendering image: ", self.image_label.text())
         pixmap = self.editor.to_qpixmap()
         if pixmap:
             scaled = pixmap.scaled(

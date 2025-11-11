@@ -1,3 +1,5 @@
+import logging
+
 from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageQt
 from PyQt6.QtGui import QPixmap
 from PIL.ImageQt import ImageQt
@@ -10,11 +12,13 @@ class Editor:
             self.open(path)
 
     def open(self, path: str):
+        logging.debug(f"opening image: {path}")
         self.image = Image.open(path)
         self.path = path
         return self
 
     def resize(self, width: int, height: int):
+        logging.debug(f"called resize function: {width}, {height}")
         if self.image:
             self.image = self.image.resize((width, height))
         return self
@@ -48,15 +52,22 @@ class Editor:
         return self
 
     def save(self, path: str = None):
+        logging.debug(f"saving image: {path}")
         if not self.image:
+            logging.debug("save called, but self.image is None")
             return
         save_path = path or self.path
         if save_path:
             self.image.save(save_path)
+            logging.debug(f"saved image: {save_path}")
 
     def to_qpixmap(self):
+        logging.debug("converting image to QPixmap")
         if not self.image:
+            logging.error("to_qpixmap called, but self.image is None")
             return None
         qimage = ImageQt(self.image)
+        logging.debug("qimage: %s", qimage)
         pixmap = QPixmap.fromImage(qimage)
+        logging.debug("pixmap: %s", pixmap)
         return pixmap
