@@ -1,4 +1,4 @@
-from src.GUI.GUI import MainWindow
+from src.GUI.MainWindow import MainWindow
 from PyQt6.QtWidgets import QApplication
 import sys
 import logging

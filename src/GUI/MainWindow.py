@@ -9,6 +9,7 @@ from PyQt6.QtWidgets import (
     QFileDialog, QMessageBox
 )
 
+from .FilterForm import FilterForm
 from .ResizeForm import ResizeForm
 from ..tools import Editor
 
@@ -48,21 +49,42 @@ class MainWindow(QtWidgets.QMainWindow):
     def initmenubar(self):
         menubar = self.menuBar()
         fileMenu = menubar.addMenu("File")
+        filterMenu = menubar.addMenu("Filters")
 
         openAction = QAction("Open", self)
-        openAction.triggered.connect(self.openImage)
+        openAction.triggered.connect(self.openImage) # type: ignore # pycharm doesn't like that line, so I had to silence it
 
         saveAction = QAction("Save", self)
-        saveAction.triggered.connect(self.saveImage)
+        saveAction.triggered.connect(self.saveImage) # type: ignore
 
         resizeAction = QAction("Resize", self)
-        resizeAction.triggered.connect(self.showResizeDialog)
+        resizeAction.triggered.connect(self.showResizeForm) # type: ignore
+
+        blurAction = QAction("Blur", self)
+        blurAction.triggered.connect(self.filterBlur) # type: ignore
+
+        contourAction = QAction("Contour", self)
+        contourAction.triggered.connect(self.filterContour) # type: ignore
+
+        detailAction = QAction("Detail", self)
+        detailAction.triggered.connect(self.filterDetail) # type: ignore
+
+        sharpenAction = QAction("Sharpen", self)
+        sharpenAction.triggered.connect(self.filterSharpen) # type: ignore
+
+        FilterFormAction = QAction("FilterForm", self)
+        FilterFormAction.triggered.connect(self.showFilterForm) # type: ignore
 
         fileMenu.addAction(openAction)
         fileMenu.addAction(saveAction)
         fileMenu.addAction(resizeAction)
         fileMenu.addSeparator()
         fileMenu.addAction("Exit", self.close)
+        filterMenu.addAction(contourAction)
+        filterMenu.addAction(detailAction)
+        filterMenu.addAction(blurAction)
+        filterMenu.addAction(blurAction)
+        filterMenu.addAction(FilterFormAction)
         logging.debug("initialized menubar")
 
     def initdarktheme(self):
@@ -96,13 +118,21 @@ class MainWindow(QtWidgets.QMainWindow):
             )
             self.image_label.setPixmap(scaled)
 
-    def showResizeDialog(self):
+    def showResizeForm(self):
         if not self.editor.image:
             QMessageBox.warning(self, "No Image", "Open an image first")
             return
 
         form = ResizeForm(self)
         form.button.clicked.connect(lambda: self.applyResize(form))
+        form.show()
+
+    def showFilterForm(self):
+        if not self.editor.image:
+            QMessageBox.warning(self, "No Image", "Open an image first")
+            return
+
+        form = FilterForm(main_window=self, parent=self, editor=self.editor)
         form.show()
 
     def applyResize(self, form):
@@ -130,3 +160,15 @@ class MainWindow(QtWidgets.QMainWindow):
         if path:
             self.editor.save(path)
             QMessageBox.information(self, "Saved", f"Saved to: {path}")
+
+    def filterBlur(self):
+        self.editor.apply_filter("blur")
+        self.renderImage()
+
+    def filterContour(self):
+        self.editor.apply_filter("contour")
+        self.renderImage()
+    def filterDetail(self):
+        pass
+    def filterSharpen(self):
+        pass

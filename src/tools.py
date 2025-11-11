@@ -38,8 +38,9 @@ class Editor:
 
     def apply_filter(self, filter_name: str):
         if not self.image:
+            logging.debug("apply_filter called without image")
             return self
-
+        logging.debug(f"apply_filter: {filter_name}")
         filters = {
             "blur": ImageFilter.BLUR,
             "contour": ImageFilter.CONTOUR,
@@ -48,6 +49,7 @@ class Editor:
         }
         f = filters.get(filter_name.lower())
         if f:
+            logging.debug(f"setting {f} filter")
             self.image = self.image.filter(f)
         return self
 
