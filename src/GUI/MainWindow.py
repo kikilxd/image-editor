@@ -1,3 +1,4 @@
+import ctypes
 import logging
 import sys
 
@@ -26,28 +27,93 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.initsidebar()
         self.initmenubar()
-        self.initdarktheme()
         self.initStatusbar()
+        self.initdarktheme()
+        self.enable_blur()
 
         self.image_label = QLabel("Open an image to display")
         self.image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.setCentralWidget(self.image_label)
         logging.debug("initialized MainWindow")
 
+
+    def enable_blur(self, acrylic=True):
+        #DWM blur
+        hwnd = int(self.winId())
+
+        class ACCENT_POLICY(ctypes.Structure):
+            _fields_ = [
+                ("AccentState", ctypes.c_int),
+                ("AccentFlags", ctypes.c_int),
+                ("GradientColor", ctypes.c_int),
+                ("AnimationId", ctypes.c_int),
+            ]
+
+        class WINDOWCOMPOSITIONATTRIBDATA(ctypes.Structure):
+            _fields_ = [
+                ("Attribute", ctypes.c_int),
+                ("Data", ctypes.c_void_p),
+                ("SizeOfData", ctypes.c_size_t),
+            ]
+
+        ACCENT_ENABLE_BLURBEHIND = 3
+        ACCENT_ENABLE_ACRYLICBLURBEHIND = 4
+
+
+        accent = ACCENT_POLICY()
+        accent.AccentState = ACCENT_ENABLE_ACRYLICBLURBEHIND if acrylic else ACCENT_ENABLE_BLURBEHIND
+        accent.AccentFlags = 0
+        # ARGB (alpha, red, green, blue) → 0xAARRGGBB
+        # use low alpha (~0x10) for subtle tint
+        accent.GradientColor = 0x10000000
+        accent.AnimationId = 0
+
+        # https://learn.microsoft.com/en-us/windows/win32/dwm/windowcompositionattribdata
+        data = WINDOWCOMPOSITIONATTRIBDATA()
+        data.Attribute = 19  # WCA_ACCENT_POLICY
+        data.SizeOfData = ctypes.sizeof(accent)
+        data.Data = ctypes.cast(ctypes.pointer(accent), ctypes.c_void_p)
+
+        # https://learn.microsoft.com/en-us/windows/win32/dwm/setwindowcompositionattribute
+        set_window_composition_attribute = ctypes.windll.user32.SetWindowCompositionAttribute
+        set_window_composition_attribute(hwnd, ctypes.byref(data))
+        self.setStyleSheet("""
+        QMainWindow {
+            background: transparent;
+        }""")
     def initsidebar(self):
         sidebar = QDockWidget("Tools", self)
         sidebar.setFeatures(QDockWidget.DockWidgetFeature.NoDockWidgetFeatures)
+        sidebar.setTitleBarWidget(QWidget())  # hide title bar
+
+        sidebar.setStyleSheet("""
+                QDockWidget {
+                    background: transparent;
+                }
+            """)
+
+        # Sidebar content
         sidebarContent = QWidget()
         layout = QVBoxLayout()
-        layout.addWidget(QLabel("Tools"))
+        label = QLabel("Tools")
+        label.setStyleSheet("color: white; font-size: 16px;")
+        layout.addWidget(label)
         layout.addStretch()
         sidebarContent.setLayout(layout)
+
         sidebar.setWidget(sidebarContent)
         self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, sidebar)
         logging.debug("initialized sidebar")
 
     def initmenubar(self):
         menubar = self.menuBar()
+        menubar.setNativeMenuBar(False)
+        menubar.setStyleSheet("""
+        QMenuBar {
+        background: transparent;
+        border-radius: 8px;
+        }
+        """)
         fileMenu = menubar.addMenu("File")
         filterMenu = menubar.addMenu("Filters")
 
@@ -60,18 +126,6 @@ class MainWindow(QtWidgets.QMainWindow):
         resizeAction = QAction("Resize", self)
         resizeAction.triggered.connect(self.showResizeForm) # type: ignore
 
-        blurAction = QAction("Blur", self)
-        blurAction.triggered.connect(self.filterBlur) # type: ignore
-
-        contourAction = QAction("Contour", self)
-        contourAction.triggered.connect(self.filterContour) # type: ignore
-
-        detailAction = QAction("Detail", self)
-        detailAction.triggered.connect(self.filterDetail) # type: ignore
-
-        sharpenAction = QAction("Sharpen", self)
-        sharpenAction.triggered.connect(self.filterSharpen) # type: ignore
-
         FilterFormAction = QAction("FilterForm", self)
         FilterFormAction.triggered.connect(self.showFilterForm) # type: ignore
 
@@ -80,10 +134,6 @@ class MainWindow(QtWidgets.QMainWindow):
         fileMenu.addAction(resizeAction)
         fileMenu.addSeparator()
         fileMenu.addAction("Exit", self.close)
-        filterMenu.addAction(contourAction)
-        filterMenu.addAction(detailAction)
-        filterMenu.addAction(blurAction)
-        filterMenu.addAction(blurAction)
         filterMenu.addAction(FilterFormAction)
         logging.debug("initialized menubar")
 
@@ -160,15 +210,3 @@ class MainWindow(QtWidgets.QMainWindow):
         if path:
             self.editor.save(path)
             QMessageBox.information(self, "Saved", f"Saved to: {path}")
-
-    def filterBlur(self):
-        self.editor.apply_filter("blur")
-        self.renderImage()
-
-    def filterContour(self):
-        self.editor.apply_filter("contour")
-        self.renderImage()
-    def filterDetail(self):
-        pass
-    def filterSharpen(self):
-        pass
