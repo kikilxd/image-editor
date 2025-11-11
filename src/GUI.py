@@ -103,7 +103,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.renderImage()
 
     def renderImage(self):
-        logging.debug("rendering image: ", self.image_label.text())
+        logging.debug("rendering image")
         pixmap = self.editor.to_qpixmap()
         if pixmap:
             scaled = pixmap.scaled(
