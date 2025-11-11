@@ -66,8 +66,16 @@ class Editor:
         if not self.image:
             logging.error("to_qpixmap called, but self.image is None")
             return None
+
+        if self.image.mode not in ("RGB", "RGBA"):
+            logging.debug("converting image mode from %s to RGBA", self.image.mode)
+            self.image = self.image.convert("RGBA")
+
         qimage = ImageQt(self.image)
-        logging.debug("qimage: %s", qimage)
+        self._qimage_ref = qimage
+
         pixmap = QPixmap.fromImage(qimage)
+        logging.debug("qimage: %s", qimage)
         logging.debug("pixmap: %s", pixmap)
+
         return pixmap
