@@ -2,6 +2,7 @@ import ctypes
 import logging
 import sys
 
+
 from PyQt6 import QtWidgets
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPalette, QColor, QAction
@@ -48,7 +49,15 @@ class MainWindow(QtWidgets.QMainWindow):
                 ("GradientColor", ctypes.c_int),
                 ("AnimationId", ctypes.c_int),
             ]
+        class MARGINS(ctypes.Structure):
+            _fields_ = [
+                ("cxLeftWidth", ctypes.c_int),
+                ("cxRightWidth", ctypes.c_int),
+                ("cxTopWidth", ctypes.c_int),
+                ("cxBottomWidth", ctypes.c_int),
+            ]
 
+        # https://learn.microsoft.com/en-us/windows/win32/dwm/windowcompositionattribdata
         class WINDOWCOMPOSITIONATTRIBDATA(ctypes.Structure):
             _fields_ = [
                 ("Attribute", ctypes.c_int),
@@ -68,11 +77,22 @@ class MainWindow(QtWidgets.QMainWindow):
         accent.GradientColor = 0x10000000
         accent.AnimationId = 0
 
+        # https://learn.microsoft.com/en-us/windows/win32/api/uxtheme/ns-uxtheme-margins
+        margins = MARGINS()
+        margins.cxLeftWidth = 5
+        margins.cxRightWidth = 5
+        margins.cxTopWidth = 5
+        margins.cxBottomWidth = 5
+
         # https://learn.microsoft.com/en-us/windows/win32/dwm/windowcompositionattribdata
         data = WINDOWCOMPOSITIONATTRIBDATA()
         data.Attribute = 19  # WCA_ACCENT_POLICY
         data.SizeOfData = ctypes.sizeof(accent)
         data.Data = ctypes.cast(ctypes.pointer(accent), ctypes.c_void_p)
+
+        # https://learn.microsoft.com/en-us/windows/win32/dwm/blur-ovw
+        ctypes.windll.dwmapi.DwmExtendFrameIntoClientArea(hwnd, ctypes.byref(margins))
+
 
         # https://learn.microsoft.com/en-us/windows/win32/dwm/setwindowcompositionattribute
         set_window_composition_attribute = ctypes.windll.user32.SetWindowCompositionAttribute
@@ -80,7 +100,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setStyleSheet("""
         QMainWindow {
             background: transparent;
-        }""")
+        }
+        * {
+            background: transparent;
+        }
+        """)
     def initsidebar(self):
         sidebar = QDockWidget("Tools", self)
         sidebar.setFeatures(QDockWidget.DockWidgetFeature.NoDockWidgetFeatures)
