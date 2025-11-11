@@ -1,5 +1,5 @@
-from GUI import MainWindow
-from PyQt6.QtWidgets import QApplication, QMainWindow
+from src.GUI.GUI import MainWindow
+from PyQt6.QtWidgets import QApplication
 import sys
 import logging
 

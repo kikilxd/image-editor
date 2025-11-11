@@ -1,33 +1,16 @@
-from PyQt6 import QtWidgets, QtGui
+import logging
+import sys
+
+from PyQt6 import QtWidgets
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QPalette, QColor, QIcon, QAction
+from PyQt6.QtGui import QPalette, QColor, QAction
 from PyQt6.QtWidgets import (
     QDockWidget, QWidget, QVBoxLayout, QLabel, QApplication,
-    QFileDialog, QDialog, QLineEdit, QPushButton, QGridLayout, QMessageBox
+    QFileDialog, QMessageBox
 )
-import sys
-import logging
-from tools import Editor
 
-
-class ResizeForm(QDialog):
-    def __init__(self, parent=None):
-        logging.debug("initializing resize form")
-        super().__init__(parent)
-        self.setWindowTitle("Resize Image")
-        grid = QGridLayout()
-        grid.addWidget(QLabel("New Width:"), 0, 0)
-        self.width_input = QLineEdit()
-        grid.addWidget(self.width_input, 0, 1)
-
-        grid.addWidget(QLabel("New Height:"), 1, 0)
-        self.height_input = QLineEdit()
-        grid.addWidget(self.height_input, 1, 1)
-
-        self.button = QPushButton("Resize")
-        grid.addWidget(self.button, 2, 0, 1, 2)
-        self.setLayout(grid)
-        logging.debug("resize form initialized")
+from .ResizeForm import ResizeForm
+from ..tools import Editor
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -133,7 +116,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.editor.resize(w, h)
         self.renderImage()
         form.close()
-
 
     def initStatusbar(self):
         self.status_bar = self.statusBar()
