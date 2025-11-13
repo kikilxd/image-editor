@@ -60,18 +60,6 @@ class MainWindow(QtWidgets.QMainWindow):
         resizeAction = QAction("Resize", self)
         resizeAction.triggered.connect(self.showResizeForm) # type: ignore
 
-        blurAction = QAction("Blur", self)
-        blurAction.triggered.connect(self.filterBlur) # type: ignore
-
-        contourAction = QAction("Contour", self)
-        contourAction.triggered.connect(self.filterContour) # type: ignore
-
-        detailAction = QAction("Detail", self)
-        detailAction.triggered.connect(self.filterDetail) # type: ignore
-
-        sharpenAction = QAction("Sharpen", self)
-        sharpenAction.triggered.connect(self.filterSharpen) # type: ignore
-
         FilterFormAction = QAction("FilterForm", self)
         FilterFormAction.triggered.connect(self.showFilterForm) # type: ignore
 
@@ -80,10 +68,6 @@ class MainWindow(QtWidgets.QMainWindow):
         fileMenu.addAction(resizeAction)
         fileMenu.addSeparator()
         fileMenu.addAction("Exit", self.close)
-        filterMenu.addAction(contourAction)
-        filterMenu.addAction(detailAction)
-        filterMenu.addAction(blurAction)
-        filterMenu.addAction(blurAction)
         filterMenu.addAction(FilterFormAction)
         logging.debug("initialized menubar")
 
