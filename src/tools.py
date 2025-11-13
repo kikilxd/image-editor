@@ -1,6 +1,7 @@
 import logging
 
 from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageQt
+from PIL.ImageFilter import GaussianBlur
 from PyQt6.QtGui import QPixmap
 from PIL.ImageQt import ImageQt
 
@@ -36,13 +37,21 @@ class Editor:
         draw.text(position, text, fill=color, font=font)
         return self
 
+    def apply_blur(self, intensity: int):
+        if not self.image:
+            logging.debug("apply_blur called without image")
+            return self
+        logging.debug(f"apply_blur: {intensity}")
+        self.image = self.image.filter(GaussianBlur(radius=intensity))
+        return self
+
+
     def apply_filter(self, filter_name: str):
         if not self.image:
             logging.debug("apply_filter called without image")
             return self
         logging.debug(f"apply_filter: {filter_name}")
         filters = {
-            "blur": ImageFilter.BLUR,
             "contour": ImageFilter.CONTOUR,
             "detail": ImageFilter.DETAIL,
             "sharpen": ImageFilter.SHARPEN,
@@ -52,6 +61,7 @@ class Editor:
             logging.debug(f"setting {f} filter")
             self.image = self.image.filter(f)
         return self
+
 
     def save(self, path: str = None):
         logging.debug(f"saving image: {path}")

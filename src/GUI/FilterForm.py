@@ -47,9 +47,10 @@ class FilterForm(QDialog):
         if selected_filter.lower() == "blur":
             intensity = self.intensity_slider.value()
             logging.debug(f"applying {selected_filter} with intensity {intensity}")
+            self.editor.apply_blur(intensity)
         else:
             logging.debug(f"applying {selected_filter} filter")
-        self.editor.apply_filter(selected_filter)
+            self.editor.apply_filter(selected_filter)
         self.main_window.renderImage()
 
     def on_filter_change(self, value):
