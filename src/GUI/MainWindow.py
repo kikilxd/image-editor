@@ -79,8 +79,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # https://learn.microsoft.com/en-us/windows/win32/api/uxtheme/ns-uxtheme-margins
         margins = MARGINS()
-        margins.cxLeftWidth = 5
-        margins.cxRightWidth = 5
+        margins.cxLeftWidth = 2
+        margins.cxRightWidth = 2
         margins.cxTopWidth = 5
         margins.cxBottomWidth = 5
 
