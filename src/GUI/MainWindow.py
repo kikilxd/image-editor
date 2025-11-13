@@ -160,15 +160,3 @@ class MainWindow(QtWidgets.QMainWindow):
         if path:
             self.editor.save(path)
             QMessageBox.information(self, "Saved", f"Saved to: {path}")
-
-    def filterBlur(self):
-        self.editor.apply_filter("blur")
-        self.renderImage()
-
-    def filterContour(self):
-        self.editor.apply_filter("contour")
-        self.renderImage()
-    def filterDetail(self):
-        pass
-    def filterSharpen(self):
-        pass
