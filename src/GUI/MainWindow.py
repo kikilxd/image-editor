@@ -104,6 +104,11 @@ class MainWindow(QtWidgets.QMainWindow):
             self.scene.addItem(self.image_item)
             self.view.fitInView(self.image_item, Qt.AspectRatioMode.KeepAspectRatio)
 
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        if self.image_item is not None and  not self.image_item.pixmap().isNull():
+            self.view.fitInView(self.image_item, Qt.AspectRatioMode.KeepAspectRatio)
+
     def showResizeForm(self):
         if not self.editor.image:
             QMessageBox.warning(self, "No Image", "Open an image first")
