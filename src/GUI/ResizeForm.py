@@ -17,5 +17,6 @@ class ResizeForm(QDialog):
 
         self.button = QPushButton("Resize")
         grid.addWidget(self.button, 2, 0, 1, 2)
+        # noinspection PyTypeChecker
         self.setLayout(grid)
         logging.debug("resize form initialized")
