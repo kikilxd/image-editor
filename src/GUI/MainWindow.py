@@ -6,7 +6,7 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPalette, QColor, QAction
 from PyQt6.QtWidgets import (
     QDockWidget, QWidget, QVBoxLayout, QLabel, QApplication,
-    QFileDialog, QMessageBox
+    QFileDialog, QMessageBox, QGraphicsScene, QGraphicsView, QGraphicsPixmapItem
 )
 
 from .FilterForm import FilterForm
@@ -29,10 +29,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.initdarktheme()
         self.initStatusbar()
 
-        self.image_label = QLabel("Open an image to display")
-        self.image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.setCentralWidget(self.image_label)
+        self.scene = QGraphicsScene()
+        logging.debug(f"scene: {self.scene}")
+        self.view = QGraphicsView(self.scene)
+        logging.debug(f"view: {self.view}")
+        self.view.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.setCentralWidget(self.view)
         logging.debug("initialized MainWindow")
+        self.image_item = None
 
     def initsidebar(self):
         sidebar = QDockWidget("Tools", self)
@@ -95,12 +99,10 @@ class MainWindow(QtWidgets.QMainWindow):
         logging.debug("rendering image")
         pixmap = self.editor.to_qpixmap()
         if pixmap:
-            scaled = pixmap.scaled(
-                self.image_label.size(),
-                Qt.AspectRatioMode.KeepAspectRatio,
-                Qt.TransformationMode.SmoothTransformation
-            )
-            self.image_label.setPixmap(scaled)
+            self.scene.clear()
+            self.image_item = QGraphicsPixmapItem(pixmap)
+            self.scene.addItem(self.image_item)
+            self.view.fitInView(self.image_item, Qt.AspectRatioMode.KeepAspectRatio)
 
     def showResizeForm(self):
         if not self.editor.image:
