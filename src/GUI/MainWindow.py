@@ -12,7 +12,7 @@ from PyQt6.QtWidgets import (
 from .FilterForm import FilterForm
 from .ResizeForm import ResizeForm
 from ..tools import Editor
-
+from .graphicsview import GraphicsView
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
@@ -24,17 +24,22 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.editor = Editor()
 
+
+
+        self.scene = QGraphicsScene()
+        logging.debug(f"scene: {self.scene}")
+
+        self.view = GraphicsView(self.scene, self)
+        logging.debug(f"view: {self.view}")
+
+        self.view.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.setCentralWidget(self.view)
+
         self.initsidebar()
         self.initmenubar()
         self.initdarktheme()
         self.initStatusbar()
 
-        self.scene = QGraphicsScene()
-        logging.debug(f"scene: {self.scene}")
-        self.view = QGraphicsView(self.scene)
-        logging.debug(f"view: {self.view}")
-        self.view.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.setCentralWidget(self.view)
         logging.debug("initialized MainWindow")
         self.image_item = None
 
