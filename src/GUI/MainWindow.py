@@ -13,6 +13,7 @@ from .FilterForm import FilterForm
 from .ResizeForm import ResizeForm
 from ..tools import Editor
 from .graphicsview import GraphicsView
+from .TextForm import TextInputDialog
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
@@ -75,14 +76,17 @@ class MainWindow(QtWidgets.QMainWindow):
         selectionAction = QAction("Selection", self)
         selectionAction.triggered.connect(lambda x: self.view.set_selection_mode(True))
 
+        AddTextAction = QAction("Add text", self)
+        AddTextAction.triggered.connect(self.showTextForm)
+
         fileMenu.addAction(openAction)
         fileMenu.addAction(saveAction)
         fileMenu.addSeparator()
         fileMenu.addAction("Exit", self.close)
-        filterMenu.addAction(FilterFormAction)
         EditMenu.addAction(FilterFormAction)
         EditMenu.addAction(resizeAction)
         EditMenu.addAction(selectionAction)
+        EditMenu.addAction(AddTextAction)
         logging.debug("initialized menubar")
 
     def initdarktheme(self):
@@ -134,6 +138,14 @@ class MainWindow(QtWidgets.QMainWindow):
             return
 
         form = FilterForm(main_window=self, parent=self, editor=self.editor)
+        form.show()
+
+    def showTextForm(self):
+        if not self.editor.image:
+            QMessageBox.warning(self, "No Image", "Open an image first")
+            return
+
+        form = TextInputDialog(parent=self)
         form.show()
 
     def applyResize(self, form):
