@@ -58,7 +58,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def initmenubar(self):
         menubar = self.menuBar()
         fileMenu = menubar.addMenu("File")
-        filterMenu = menubar.addMenu("Filters")
+        EditMenu = menubar.addMenu("Edit")
 
         openAction = QAction("Open", self)
         openAction.triggered.connect(self.openImage) # type: ignore # pycharm doesn't like that line, so I had to silence it
@@ -69,15 +69,20 @@ class MainWindow(QtWidgets.QMainWindow):
         resizeAction = QAction("Resize", self)
         resizeAction.triggered.connect(self.showResizeForm) # type: ignore
 
-        FilterFormAction = QAction("FilterForm", self)
+        FilterFormAction = QAction("Add filter", self)
         FilterFormAction.triggered.connect(self.showFilterForm) # type: ignore
+
+        selectionAction = QAction("Selection", self)
+        selectionAction.triggered.connect(lambda x: self.view.set_selection_mode(True))
 
         fileMenu.addAction(openAction)
         fileMenu.addAction(saveAction)
-        fileMenu.addAction(resizeAction)
         fileMenu.addSeparator()
         fileMenu.addAction("Exit", self.close)
         filterMenu.addAction(FilterFormAction)
+        EditMenu.addAction(FilterFormAction)
+        EditMenu.addAction(resizeAction)
+        EditMenu.addAction(selectionAction)
         logging.debug("initialized menubar")
 
     def initdarktheme(self):
