@@ -24,8 +24,9 @@ class Editor:
             self.image = self.image.resize((width, height))
         return self
 
-    def add_text(self, text: str, position=(10, 10), font_size=30, color="white"):
+    def add_text(self, text: str, position, font_size=40, color="white"):
         if not self.image:
+            logging.debug("add text: no image")
             return self
 
         draw = ImageDraw.Draw(self.image)
@@ -35,6 +36,7 @@ class Editor:
             font = ImageFont.load_default()
 
         draw.text(position, text, fill=color, font=font)
+        logging.debug(f"Text '{text}' added at {position}")
         return self
 
     def apply_blur(self, intensity: int):
