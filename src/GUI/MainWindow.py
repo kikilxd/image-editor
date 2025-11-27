@@ -79,6 +79,14 @@ class MainWindow(QtWidgets.QMainWindow):
         AddTextAction = QAction("Add text", self)
         AddTextAction.triggered.connect(self.showTextForm)
 
+        self.undoAction = QAction("Undo", self)
+        self.undoAction.setShortcut("Ctrl+Z")
+        self.undoAction.triggered.connect(self.undo)
+
+        self.redoAction = QAction("Redo", self)
+        self.redoAction.setShortcut("Ctrl+Y")
+        self.redoAction.triggered.connect(self.redo)
+
         fileMenu.addAction(openAction)
         fileMenu.addAction(saveAction)
         fileMenu.addSeparator()
@@ -87,7 +95,13 @@ class MainWindow(QtWidgets.QMainWindow):
         EditMenu.addAction(resizeAction)
         EditMenu.addAction(selectionAction)
         EditMenu.addAction(AddTextAction)
+        EditMenu.addSeparator()
+        EditMenu.addAction(self.undoAction)
+        EditMenu.addAction(self.redoAction)
         logging.debug("initialized menubar")
+
+        # ensure actions reflect current editor state
+        self.update_undo_redo_actions()
 
     def initdarktheme(self):
         self.app.setStyle("Fusion")
@@ -117,6 +131,8 @@ class MainWindow(QtWidgets.QMainWindow):
             self.image_item = QGraphicsPixmapItem(pixmap)
             self.scene.addItem(self.image_item)
             self.view.fitInView(self.image_item, Qt.AspectRatioMode.KeepAspectRatio)
+        # update undo/redo action states after any render (which follows edits)
+        self.update_undo_redo_actions()
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -173,3 +189,22 @@ class MainWindow(QtWidgets.QMainWindow):
         if path:
             self.editor.save(path)
             QMessageBox.information(self, "Saved", f"Saved to: {path}")
+
+    # undo/redo helpers
+    def update_undo_redo_actions(self):
+        try:
+            can_undo = self.editor.can_undo()
+            can_redo = self.editor.can_redo()
+        except Exception:
+            can_undo = False
+            can_redo = False
+        self.undoAction.setEnabled(can_undo)
+        self.redoAction.setEnabled(can_redo)
+
+    def undo(self):
+        if self.editor.undo():
+            self.renderImage()
+
+    def redo(self):
+        if self.editor.redo():
+            self.renderImage()
