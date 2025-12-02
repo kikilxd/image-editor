@@ -6,7 +6,7 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPalette, QColor, QAction
 from PyQt6.QtWidgets import (
     QDockWidget, QWidget, QVBoxLayout, QLabel, QApplication,
-    QFileDialog, QMessageBox, QGraphicsScene, QGraphicsView, QGraphicsPixmapItem
+    QFileDialog, QMessageBox, QGraphicsScene, QGraphicsView, QGraphicsPixmapItem, QPushButton
 )
 
 from .FilterForm import FilterForm
@@ -49,7 +49,20 @@ class MainWindow(QtWidgets.QMainWindow):
         sidebar.setFeatures(QDockWidget.DockWidgetFeature.NoDockWidgetFeatures)
         sidebarContent = QWidget()
         layout = QVBoxLayout()
-        layout.addWidget(QLabel("Tools"))
+        sidebar.setStyleSheet("""
+        QPushButton{
+            height: 80px;
+            background-color: #121212;
+            }""")
+        resizebutton = QPushButton("Resize")
+        resizebutton.clicked.connect(self.showResizeForm)
+        layout.addWidget(resizebutton)
+        filterbutton = QPushButton("Filter")
+        filterbutton.clicked.connect(self.showFilterForm)
+        layout.addWidget(filterbutton)
+        textbutton = QPushButton("Text")
+        textbutton.clicked.connect(self.showTextForm)
+        layout.addWidget(textbutton)
         layout.addStretch()
         sidebarContent.setLayout(layout)
         sidebar.setWidget(sidebarContent)
