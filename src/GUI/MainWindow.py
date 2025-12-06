@@ -53,6 +53,7 @@ class MainWindow(QtWidgets.QMainWindow):
         QPushButton{
             height: 80px;
             background-color: #121212;
+            color: white;
             }""")
         resizebutton = QPushButton("Resize")
         resizebutton.clicked.connect(self.showResizeForm)
