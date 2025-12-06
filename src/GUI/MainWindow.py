@@ -44,6 +44,9 @@ class MainWindow(QtWidgets.QMainWindow):
         logging.debug("initialized MainWindow")
         self.image_item = None
 
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        self.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, False)
+
     def initsidebar(self):
         sidebar = QDockWidget("Tools", self)
         sidebar.setFeatures(QDockWidget.DockWidgetFeature.NoDockWidgetFeatures)
