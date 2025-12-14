@@ -18,5 +18,6 @@ class TextInputDialog(QDialog):
         layout.addLayout(form)
         ok_btn = QPushButton("OK – Click on Image")
         ok_btn.clicked.connect(self.accept)
+        self.button = ok_btn
         layout.addWidget(ok_btn)
         self.setLayout(layout)

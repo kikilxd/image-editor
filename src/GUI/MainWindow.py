@@ -6,14 +6,14 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPalette, QColor, QAction
 from PyQt6.QtWidgets import (
     QDockWidget, QWidget, QVBoxLayout, QLabel, QApplication,
-    QFileDialog, QMessageBox, QGraphicsScene, QGraphicsView, QGraphicsPixmapItem, QPushButton
+    QFileDialog, QMessageBox, QGraphicsScene, QGraphicsPixmapItem, QPushButton
 )
 
 from .FilterForm import FilterForm
 from .ResizeForm import ResizeForm
 from ..tools import Editor
-from .graphicsview import GraphicsView
 from .TextForm import TextInputDialog
+from .graphicsview import GraphicsView
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
@@ -179,6 +179,20 @@ class MainWindow(QtWidgets.QMainWindow):
             return
 
         form = TextInputDialog(parent=self)
+        # create a font from the requested size when the user accepts; then enable place-text mode
+        from PyQt6.QtGui import QFont, QColor
+        def on_ok():
+            text = form.text_input.text().strip()
+            if not text:
+                form.close()
+                return
+            font = QFont()
+            font.setPointSize(int(form.size_input.value()))
+            color = getattr(self.view, 'text_color', QColor(230,230,230))
+            self.view.set_place_text(text, font, color)
+            form.close()
+
+        form.button.clicked.connect(on_ok)
         form.show()
 
     def applyResize(self, form):
